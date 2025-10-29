@@ -1,0 +1,15 @@
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+
+# SQLite DB file (local dev)
+database.db
+
+# IDE/editor folders
+.vscode/

@@ -1,11 +1,12 @@
-from sqlmodel import Session, Field, create_engine, SQLModel, select, Relationship
+from sqlmodel import Session, create_engine, Field, SQLModel, Field, select, Relationship
 from typing import Annotated
 from fastapi import Depends
 
 
-#SQL Code setup
-sqlite_file_name = "database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
+#SQL code setup
+sqllite_file_name = "database.db"
+sqlite_url = f"sqlite:///{sqllite_file_name}"
+
 
 connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_url, connect_args=connect_args)

@@ -1,14 +1,15 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from db.session import create_db_and_tables
 
+@asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Database starting")
+    # Startup database
     create_db_and_tables()
-    print("Database ready")
     yield
 
 app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
-async def root():
-    return {"message": "Hello, World!"}
+def read_root():
+    return {"Hello": "World"}
