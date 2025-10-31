@@ -5,6 +5,7 @@ router = APIRouter()
 
 @router.get("/")
 def get_all_users():
+    #Add code to get all users from DB
     return {"message": "Users listed"}
 
 #Create route for GET USER
