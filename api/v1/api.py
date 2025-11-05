@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from api.v1.endpoints import users, lostItems
+from api.v1.endpoints import users, lostItems, prayerRequests
 
 
 api_router = APIRouter()
