@@ -4,6 +4,7 @@ from db.session import create_db_and_tables
 from api.v1.api import api_router
 from fastapi.middleware.cors import CORSMiddleware
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup database

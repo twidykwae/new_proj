@@ -14,7 +14,7 @@ def get_all_users(session: SessionDep):
 #Create route for GET USER
 @router.get("/{user_id}")
 def get_user(user_id:int, session: SessionDep):
-    user = session.exec(User).get(user_id)
+    user = session.exec(select(User).where(User.id == user_id)).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
@@ -26,3 +26,12 @@ def create_new_user(user: User, session: SessionDep):
     session.commit()
     session.refresh(new_user)
     return new_user
+
+@router.delete("/{user_id}", status_code=204)
+def delete_user(session: SessionDep, user_id: int):
+    user = session.exec(select(User).where(User.id == user_id)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    session.delete(user)
+    session.commit()
+    return
