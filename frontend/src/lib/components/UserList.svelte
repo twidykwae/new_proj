@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import User from './User.svelte';
+    import User from '../../../routes/Users.svelte';
 
     let loading = $state(false);
     let error = $state(null);
@@ -85,7 +85,7 @@
             currentPage = 1;
             fetchUsers();
     }}
-     >
+    >
     <option value="5">5</option>
     <option value="10">10</option>
     <option value="15">15</option>
