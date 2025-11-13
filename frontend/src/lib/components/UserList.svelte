@@ -77,10 +77,13 @@
     }
 </script>
 <h1>Users</h1>
-<select bind:value={selectedResults} 
-    onchange={() => { 
-        currentPage = 1;
-        fetchUsers();
+
+<div class="results-per-page">
+    Results per page:
+    <select bind:value={selectedResults} 
+        onchange={() => { 
+            currentPage = 1;
+            fetchUsers();
     }}
      >
     <option value="5">5</option>
@@ -90,13 +93,14 @@
     <option value="25">25</option>
     <option value="50">50</option>
 </select>
+</div>
 
 <div class="pagination">
     <button onclick={prevPage} disabled={currentPage === 1}>Prev</button>
     <ul class="pagination-numbers">
     {#each Array(totalPages).fill(0) as _, i}
         <li>
-            <a href="#top" onclick={(e) => goToPage(e, i + 1)}>{i+1}</a>
+            <a href="#top" onclick={(e) => goToPage(e, i + 1)} class:selected={currentPage === i + 1}>{i+1}</a>
         </li>
     {/each}
 </ul>
