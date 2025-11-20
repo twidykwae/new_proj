@@ -3,4 +3,4 @@
 </script>
 
 <h1>Welcome Home</h1>
-<p>This is the Home page of your Svelte app. Use the navigation bar to explore other pages!</p>
+<p>This is the Home page of our Svelte app. Use the navigation bar to explore other pages!</p>

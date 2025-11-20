@@ -11,6 +11,7 @@
     let selectedResults = $state("10");
     let perPageResults = $derived(parseInt(selectedResults));
     let totalPages = $derived(totalUsers > 0 ? Math.ceil(totalUsers / perPageResults) : 10);
+    let userSearchText = $state("");
 
     onMount(() => {
         fetchUsers();
@@ -21,7 +22,7 @@
         error = null;
 
         try{
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/users?curPage=${currentPage}&pageSize=${perPageResults}`);
+            const response = await fetch(`http://127.0.0.1:8000/api/v1/users?curPage=${currentPage}&pageSize=${perPageResults}&earch=${userSearchText}`);
             if(!response.ok){
                 throw new Error('Failed to fetch users');
             }
@@ -75,6 +76,11 @@
             fetchUsers();
         }
     }
+
+    function search(){
+        currentPage = 0;
+        fetchUsers();
+    }
 </script>
 <h1>Users</h1>
 
@@ -94,6 +100,8 @@
     <option value="50">50</option>
 </select>
 </div>
+
+<input type="text" placeholder="Search users..." bind:value={userSearchText} oninput={search}/>
 
 <div class="pagination">
     <button onclick={prevPage} disabled={currentPage === 1}>Prev</button>

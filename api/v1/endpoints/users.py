@@ -1,23 +1,29 @@
 from fastapi import APIRouter, HTTPException, Query, Response
 from db.models import User
 from db.session import SessionDep, select
+from sqlmodel import col
 from sqlmodel import func
 from db.models import User
 
 
 router = APIRouter()
 
+
+
 #Create route for GET ALL USERS with pagination
 @router.get("/")
-def get_all_users(response: Response, session: SessionDep, curPage: int = Query(1, ge=1), pageSize: int = Query(10, ge=1)):
+def get_all_users(response: Response, session: SessionDep, curPage: int = 1, pageSize: int = 10, searchText: str=""):
     offset_value = (curPage - 1) * pageSize
     statement = select(User).order_by(User.id).offset(offset_value).limit(pageSize)
+    searchStatement = select(User).where(col(User.name).ilike(f"%{searchText}%"))
+    search = session.exec(searchStatement)
     users = session.exec(statement).all()
     total_count = total_count = session.exec(select(func.count()).select_from(User)).one()
 
     return {
         "total": total_count,
-        "users": users
+        "users": users,
+        "search": search
     }
     
 #Create route for GET USER
