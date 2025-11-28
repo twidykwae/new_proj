@@ -9,7 +9,6 @@ class User(SQLModel, table=True):
     major: str
     graduation_year: int
 
-
 class LostItem(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     title: str

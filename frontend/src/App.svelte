@@ -4,6 +4,9 @@
   import Home from '../routes/Home.svelte';
   import About from '../routes/About.svelte';
   import Admin from '../routes/Admin.svelte';
+  import {authStore} from '../src/stores/auth.svelte.js';
+  import Login from '../routes/Login.svelte';
+  import Profile from '../routes/Profile.svelte';
 
   let route = $derived($currentRoute);
 
@@ -20,6 +23,12 @@
     if(path === '/admin'){
       return Admin;
     }
+    if(path === '/login'){
+      return Login;
+    }
+    if(path === '/profile'){
+      return Profile;
+    } 
     return Home;
     }
 
@@ -31,6 +40,14 @@
   <a href="#/about">About</a>
   <a href="#/users">Users</a>
   <a href="#/admin">Admin</a>
+  {#if authStore.isAuthenticated}
+    <a href="#/profile">Profile</a>
+    <button onclick={() => { authStore.logout(); window.location.href = '/login'; }} class="btn-logout">
+      Logout
+    </button>
+  {:else}
+    <a href="#/login">Login</a>
+  {/if}
 </nav>
 
 {#if CurrentComponent}
