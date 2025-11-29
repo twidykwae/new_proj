@@ -121,16 +121,24 @@ async def read_users_me(
 @router.get("/")
 def get_all_users(response: Response, session: SessionDep, curPage: int = 1, pageSize: int = 10, searchText: str=""):
     offset_value = (curPage - 1) * pageSize
-    statement = select(User).order_by(User.id).offset(offset_value).limit(pageSize)
-    searchStatement = select(User).where(col(User.name).ilike(f"%{searchText}%"))
-    search = session.exec(searchStatement)
+    
+    statement = select(User)
+    
+    # Search across multiple fields
+    if searchText:
+        statement = statement.where(
+            col(User.name).ilike(f"%{searchText}%") | 
+            col(User.email).ilike(f"%{searchText}%") |
+            col(User.major).ilike(f"%{searchText}%")
+        )
+    
+    total_count = session.exec(select(func.count()).select_from(statement.subquery())).one()
+    statement = statement.order_by(User.id).offset(offset_value).limit(pageSize)
     users = session.exec(statement).all()
-    total_count = total_count = session.exec(select(func.count()).select_from(User)).one()
 
     return {
         "total": total_count,
-        "users": users,
-        "search": search
+        "users": users
     }
     
 #Create route for GET USER
@@ -141,7 +149,7 @@ def get_user(user_id:int, session: SessionDep):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-@router.post("/", status_code=204)
+@router.post("/", status_code=201)
 def create_new_user(user: User, session: SessionDep):
     user.password = get_password_hash(user.password)
     new_user = user

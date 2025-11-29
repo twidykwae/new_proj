@@ -22,7 +22,7 @@
         error = null;
 
         try{
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/users?curPage=${currentPage}&pageSize=${perPageResults}&earch=${userSearchText}`);
+            const response = await fetch(`http://127.0.0.1:8000/api/v1/users?curPage=${currentPage}&pageSize=${perPageResults}&searchText=${userSearchText}`);
             if(!response.ok){
                 throw new Error('Failed to fetch users');
             }
@@ -78,7 +78,7 @@
     }
 
     function search(){
-        currentPage = 0;
+        currentPage = 1;
         fetchUsers();
     }
 </script>

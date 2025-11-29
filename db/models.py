@@ -14,7 +14,6 @@ class LostItem(SQLModel, table=True):
     title: str
     description: str
     location_found: str
-    date_lost: datetime
     contact: str
 
 
@@ -24,4 +23,4 @@ class PrayerRequest(SQLModel, table=True):
     prayer_request: str
     posted_by: str
     is_anonymous: bool = True
-    created_at: datetime = datetime.now()
+    created_at: datetime = Field(default_factory=datetime.utcnow)

@@ -7,6 +7,8 @@
   import {authStore} from '../src/stores/auth.svelte.js';
   import Login from '../routes/Login.svelte';
   import Profile from '../routes/Profile.svelte';
+  import LostItemsList from '../routes/LostItems.svelte';
+  import PrayerRequestsRoute from '../routes/PrayerRequestsRoute.svelte';
 
   let route = $derived($currentRoute);
 
@@ -29,6 +31,13 @@
     if(path === '/profile'){
       return Profile;
     } 
+    
+    if(path === '/lostitems'){
+      return LostItemsList;
+    }
+    if(path === '/prayer-requests'){
+      return PrayerRequestsRoute;
+    }
     return Home;
     }
 
@@ -40,6 +49,8 @@
   <a href="#/about">About</a>
   <a href="#/users">Users</a>
   <a href="#/admin">Admin</a>
+  <a href="#/lostitems">Lost and Found</a>
+  <a href="#/prayer-requests">Prayer Requests</a>
   {#if authStore.isAuthenticated}
     <a href="#/profile">Profile</a>
     <button onclick={() => { authStore.logout(); window.location.href = '/login'; }} class="btn-logout">
