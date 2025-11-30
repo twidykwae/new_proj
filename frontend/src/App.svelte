@@ -9,7 +9,7 @@
   import Profile from '../routes/Profile.svelte';
   import LostItemsList from '../routes/LostItems.svelte';
   import PrayerRequestsRoute from '../routes/PrayerRequestsRoute.svelte';
-
+  import Register from '../routes/Register.svelte';
   let route = $derived($currentRoute);
 
   function getComponent(path){
@@ -38,20 +38,24 @@
     if(path === '/prayer-requests'){
       return PrayerRequestsRoute;
     }
+    if(path === '/register'){
+      return Register;
+    }
     return Home;
     }
 
   let CurrentComponent = $derived(getComponent(route));
 </script>
 
-<nav>
+<nav class="main-navbar">
   <a href="#/">Home</a>
   <a href="#/about">About</a>
-  <a href="#/users">Users</a>
-  <a href="#/admin">Admin</a>
+  {#if authStore.isAdmin()}
+    <a href="#/admin">Admin</a>
+  {/if}
+  {#if authStore.isAuthenticated}
   <a href="#/lostitems">Lost and Found</a>
   <a href="#/prayer-requests">Prayer Requests</a>
-  {#if authStore.isAuthenticated}
     <a href="#/profile">Profile</a>
     <button onclick={() => { authStore.logout(); window.location.href = '/login'; }} class="btn-logout">
       Logout

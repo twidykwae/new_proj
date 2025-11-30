@@ -8,6 +8,7 @@ class User(SQLModel, table=True):
     password: str
     major: str
     graduation_year: int
+    is_admin: bool = False
 
 class LostItem(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)

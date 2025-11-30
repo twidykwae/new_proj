@@ -24,6 +24,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', '30')
 class Token(BaseModel):
     access_token: str
     token_type: str
+    user: User
 
 
 router = APIRouter()
@@ -41,13 +42,13 @@ def get_password_hash(password):
     return password_hash.hash(password)
 
 
-def get_user_by_name(username: str):
+def get_user_by_email(email: str):
     for session in get_session():
-        return session.exec(select(User).where(User.name == username)).first()
+        return session.exec(select(User).where(User.email == email)).first()
     
 
-def authenticate_user(username: str, password: str):
-    user = get_user_by_name(username)
+def authenticate_user(email: str, password: str):
+    user = get_user_by_email(email)
     if not user:
         return False
     if not verify_password(password, user.password):
@@ -79,7 +80,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
             raise credentials_exception
     except InvalidTokenError:
         raise credentials_exception
-    user = get_user_by_name(username)
+    user = get_user_by_email(username)
     if user is None:
         raise credentials_exception
     return user
@@ -99,14 +100,14 @@ async def login_for_access_token(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.name}, expires_delta=access_token_expires
+        data={"sub": user.email}, expires_delta=access_token_expires
     )
-    return Token(access_token=access_token, token_type="bearer")
+    return Token(access_token=access_token, token_type="bearer", user=user)
 
 
 @router.get("/me", response_model=User)
