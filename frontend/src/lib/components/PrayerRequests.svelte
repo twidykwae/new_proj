@@ -80,11 +80,25 @@
 {:else if error}
     <p class="error">Error: {error}</p>
 {:else}
+<div class="results-per-page">
+        Results per page:
+        <select bind:value={selectedResults} 
+            onchange={() => {
+                currentPage = 1;
+                fetchPrayerRequests();
+            }}>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+        </select>
+    </div>
     <div>
         <input type="text" placeholder="Search Prayer Requests" bind:value={prayerRequestSearchText} />
         <button onclick={searchPrayerRequests}>Search</button>
     </div>
-    <table>
+    <div class="request-list">
+        <table>
         <thead>
             <tr>
                 <th>ID</th>
@@ -106,6 +120,7 @@
             {/each}
         </tbody>
     </table>
+    </div>
 
     <div class="pagination">
         <button onclick={prevPage} disabled={currentPage === 1}>Prev</button>

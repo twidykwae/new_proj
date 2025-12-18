@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response
 from sqlalchemy import func
 from sqlmodel import col
-from db.models import LostItem
+from db.models import LostandFoundItem
 from db.session import SessionDep, select
 
 router = APIRouter()
@@ -10,14 +10,14 @@ router = APIRouter()
 def get_all_lost_items(response: Response,session: SessionDep,curPage: int = 1,pageSize: int = 10,searchText: str = ""):
     offset_value = (curPage - 1) * pageSize
 
-    query = select(LostItem)
+    query = select(LostandFoundItem)
 
     if searchText:
         search = f"%{searchText}%"
         query = query.where(
-            LostItem.title.ilike(search) |
-            LostItem.description.ilike(search) |
-            LostItem.location_found.ilike(search)
+            LostandFoundItem.title.ilike(search) |
+            LostandFoundItem.description.ilike(search) |
+            LostandFoundItem.location_found.ilike(search)
         )
 
     total = session.exec(
@@ -25,7 +25,7 @@ def get_all_lost_items(response: Response,session: SessionDep,curPage: int = 1,p
     ).one()
 
     items = session.exec(
-        query.order_by(LostItem.id).offset(offset_value).limit(pageSize)
+        query.order_by(LostandFoundItem.id).offset(offset_value).limit(pageSize)
     ).all()
 
     return {
@@ -38,15 +38,13 @@ def get_all_lost_items(response: Response,session: SessionDep,curPage: int = 1,p
 #Create route for GET LOST ITEM
 @router.get("/{item_id}")
 def get_lost_item(item_id:int, session: SessionDep):
-    #Add code to get lost item from DB
-    lost_item = session.exec(select(LostItem).where(LostItem.id == item_id)).first()
+    lost_item = session.exec(select(LostandFoundItem).where(LostandFoundItem.id == item_id)).first()
     if not lost_item:
         raise HTTPException(status_code=404, detail="Lost item not found")
     return lost_item
 
 @router.post("/", status_code=201)
-def create_new_lost_item(lost_item: LostItem, session: SessionDep):
-    #Add code to create the lost item
+def create_new_lost_item(lost_item: LostandFoundItem, session: SessionDep):
     new_lost_item = lost_item
     session.add(new_lost_item)
     session.commit()
@@ -54,9 +52,8 @@ def create_new_lost_item(lost_item: LostItem, session: SessionDep):
     return new_lost_item
 
 @router.put("/{item_id}")
-def update_lost_item(item_id: int, lost_item: LostItem, session: SessionDep):
-    #Add code to update lost item in DB
-    existing_item = session.exec(select(LostItem).where(LostItem.id == item_id)).first()
+def update_lost_item(item_id: int, lost_item: LostandFoundItem, session: SessionDep):
+    existing_item = session.exec(select(LostandFoundItem).where(LostandFoundItem.id == item_id)).first()
     if not existing_item:
         raise HTTPException(status_code=404, detail="Lost item not found")
     existing_item.title = lost_item.title
@@ -72,7 +69,7 @@ def update_lost_item(item_id: int, lost_item: LostItem, session: SessionDep):
 @router.delete("/{item_id}")
 def delete_lost_item(session: SessionDep, item_id: int):
     #Add code to delete lost item from DB
-    lost_item = session.exec(select(LostItem).where(LostItem.id == item_id)).first()
+    lost_item = session.exec(select(LostandFoundItem).where(LostandFoundItem.id == item_id)).first()
     if not lost_item:
         raise HTTPException(status_code=404, detail="Lost item not found")
     session.delete(lost_item)

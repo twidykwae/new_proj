@@ -1,95 +1,26 @@
 from fastapi import APIRouter, HTTPException, Depends, Response, status, FastAPI
-from db.models import User
+from db.models import UserBase as User
 from db.session import SessionDep, select, get_session
 from sqlmodel import col
 from sqlmodel import func
-from db.models import User
-import os
-from dotenv import load_dotenv
+from db.schemas import Token, UserRead, PaginatedUsers, UserCreate
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
-from pwdlib import PasswordHash
-from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta, timezone
-import jwt
 
-
-load_dotenv()
-
-SECRET_KEY = os.getenv('SECRET_KEY')
-ALGORITHM = os.getenv('ALGORITHM')
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', '30'))
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-    user: User
-
+from core.security import(
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    verify_password,
+    get_password_hash,
+    get_user_by_email,
+    authenticate_user,
+    create_access_token,
+    get_current_user,
+    get_current_active_user,
+    get_current_active_admin_user
+)
 
 router = APIRouter()
-
-
-password_hash = PasswordHash.recommended()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/token")
-
-
-def verify_password(password, hashed_password):
-    return password_hash.verify(password, hashed_password)
-
-
-def get_password_hash(password):
-    return password_hash.hash(password)
-
-
-def get_user_by_email(email: str):
-    for session in get_session():
-        return session.exec(select(User).where(User.email == email)).first()
-    
-
-def authenticate_user(email: str, password: str):
-    user = get_user_by_email(email)
-    if not user:
-        return False
-    if not verify_password(password, user.password):
-        return False
-    return user
-
-
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-    except InvalidTokenError:
-        raise credentials_exception
-    user = get_user_by_email(username)
-    if user is None:
-        raise credentials_exception
-    return user
-
-
-async def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)],
-):
-    return current_user
 
 
 @router.post("/token")
@@ -107,28 +38,26 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
-    return Token(access_token=access_token, token_type="bearer", user=user)
+    return Token(access_token=access_token, token_type="bearer", user=UserRead.model_validate(user))
 
 
-@router.get("/me", response_model=User)
+@router.get("/me", response_model=UserRead)
 async def read_users_me(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
-    return current_user
+    return UserRead.model_validate(current_user)
 
 
 
 #Create route for GET ALL USERS with pagination
-@router.get("/")
-def get_all_users(response: Response, session: SessionDep, curPage: int = 1, pageSize: int = 10, searchText: str=""):
+@router.get("/", response_model=PaginatedUsers)
+def get_all_users(response: Response, current_user: Annotated[User, Depends(get_current_active_admin_user)], session: SessionDep, curPage: int = 1, pageSize: int = 10, searchText: str=""):
     offset_value = (curPage - 1) * pageSize
-    
     statement = select(User)
     
-    # Search across multiple fields
     if searchText:
         statement = statement.where(
-            col(User.name).ilike(f"%{searchText}%") | 
+            col(User.full_name).ilike(f"%{searchText}%") | 
             col(User.email).ilike(f"%{searchText}%") |
             col(User.major).ilike(f"%{searchText}%")
         )
@@ -144,14 +73,19 @@ def get_all_users(response: Response, session: SessionDep, curPage: int = 1, pag
     
 #Create route for GET USER
 @router.get("/{user_id}")
-def get_user(user_id:int, session: SessionDep):
+def get_user(user_id:int, current_user: Annotated[User, Depends(get_current_active_user)], session: SessionDep):
     user = session.exec(select(User).where(User.id == user_id)).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
 @router.post("/", status_code=201)
-def create_new_user(user: User, session: SessionDep):
+def create_new_user(user: UserCreate, session: SessionDep):
+    if session.exec(select(User).where(User.email == user.email)).first():
+        raise HTTPException(status_code=400, detail="Email already registered")
+    if len(user.password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters long")
+    
     user.password = get_password_hash(user.password)
     new_user = user
     session.add(new_user)
@@ -160,7 +94,7 @@ def create_new_user(user: User, session: SessionDep):
     return new_user
 
 @router.delete("/{user_id}", status_code=204)
-def delete_user(session: SessionDep, user_id: int):
+def delete_user(session: SessionDep, user_id: int, current_user: Annotated[User, Depends(get_current_active_admin_user)]):
     user = session.exec(select(User).where(User.id == user_id)).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
