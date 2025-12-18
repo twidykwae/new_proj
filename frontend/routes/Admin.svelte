@@ -11,17 +11,6 @@
     }
 </script>
 
-<style>
-    .wrapper {
-        display: flex;
-        min-height: 100vh;
-    }
-    .content {
-        flex: 1;
-        padding: 20px;
-    }
-</style>
-
 <div class="wrapper">
     <Sidebar {activeSection} {setPage} />
 
