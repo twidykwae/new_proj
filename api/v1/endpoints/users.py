@@ -7,6 +7,7 @@ from db.schemas import Token, UserRead, PaginatedUsers, UserCreate
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import datetime, timedelta, timezone
+from fastapi.middleware.cors import CORSMiddleware
 
 from core.security import(
     ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -86,8 +87,17 @@ def create_new_user(user: UserCreate, session: SessionDep):
     if len(user.password) < 8:
         raise HTTPException(status_code=400, detail="Password must be at least 8 characters long")
     
-    user.password = get_password_hash(user.password)
-    new_user = user
+    # Create User instance from UserCreate schema
+    hashed_password = get_password_hash(user.password)
+    new_user = User(
+        full_name=user.full_name,
+        email=user.email,
+        password=hashed_password,
+        major=user.major,
+        graduation_year=user.graduation_year,
+        profile_image_url=user.profile_image_url,
+        is_admin=False
+    )
     session.add(new_user)
     session.commit()
     session.refresh(new_user)
