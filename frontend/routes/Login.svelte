@@ -10,7 +10,8 @@ import { authStore } from '../src/stores/auth.svelte.js';
         detail: string;
     }
 
-    let {sendLogin} = $props();
+    let props = $props<{sendLogin?: any}>();
+    let sendLogin = props.sendLogin;
 
     let isLoggedIn = $state(false);
     let username = $state('');
