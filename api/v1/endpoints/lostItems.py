@@ -1,8 +1,13 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Response, Depends
 from sqlalchemy import func
 from sqlmodel import col
+from db.schemas import LostandFoundItemCreate
 from db.models import LostandFoundItem
 from db.session import SessionDep, select
+from typing import Annotated
+from db.models import UserBase as User
+from core.security import get_current_active_user
+
 
 router = APIRouter()
 
@@ -44,8 +49,11 @@ def get_lost_item(item_id:int, session: SessionDep):
     return lost_item
 
 @router.post("/", status_code=201)
-def create_new_lost_item(lost_item: LostandFoundItem, session: SessionDep):
-    new_lost_item = lost_item
+def create_new_lost_item(lost_item: LostandFoundItemCreate, session: SessionDep, current_user: Annotated[User, Depends(get_current_active_user)]):
+    new_lost_item = LostandFoundItem(
+        **lost_item.model_dump(),
+        user_id=current_user.id
+    )
     session.add(new_lost_item)
     session.commit()
     session.refresh(new_lost_item)

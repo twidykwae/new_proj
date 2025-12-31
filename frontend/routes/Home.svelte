@@ -59,7 +59,7 @@
 			<div class="relative hidden lg:block">
 				<div class="relative z-10">
 					<div class="relative rounded-2xl overflow-hidden shadow-lg">
-						<img src="../src/assets/taylor.webp" alt="Taylor students" class="relative w-full h-auto object-cover rounded-2xl"/>
+						<img src="../public/taylor.webp" alt="Taylor students" class="relative w-full h-auto object-cover rounded-2xl"/>
 					</div>
 				</div>
 			</div>

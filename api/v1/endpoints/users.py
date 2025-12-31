@@ -111,3 +111,4 @@ def delete_user(session: SessionDep, user_id: int, current_user: Annotated[User,
     session.delete(user)
     session.commit()
     return
+

@@ -8,6 +8,8 @@
         const description = form.description.value;
         const location = form.location.value;
         const contact_info = form.contact_info.value;
+        const category = form.category.value;
+        const image_url = form.image_url.value;
 
         const response = await fetch('http://localhost:8000/api/v1/lost-items/', {
             method: 'POST',
@@ -18,7 +20,9 @@
                 title,
                 description,
                 location_found: location,
-                contact: contact_info})
+                contact: contact_info,
+                category: category,
+                image_url: image_url})
 
         });
 
@@ -39,6 +43,10 @@
         <input type="text" id="title" name="title" required />
         <label for="description">Description:</label>
         <input type="text" id="description" name="description" required />
+        <label for="category">Category:</label>
+        <input type="text" id="category" name="category" required />
+        <label for="image_url">Image URL:</label>
+        <input type="text" id="image_url" name="image_url" required />
         <label for="location">Location:</label>
         <input type="text" id="location" name="location" required />
         <label for="contact_info">Contact Info:</label>
